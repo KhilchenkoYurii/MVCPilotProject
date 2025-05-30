@@ -37,6 +37,8 @@ namespace MVCPilotProjectWeb.Controllers
                 _applicationDb.Add(newCategory);
                 _applicationDb.SaveChanges();
 
+                TempData["success"] = "Category was successfully created!";
+
                 return RedirectToAction("Index");
             }
 
@@ -63,20 +65,52 @@ namespace MVCPilotProjectWeb.Controllers
         [HttpPost]
         public IActionResult Edit(Category newCategory)
         {
-            if (newCategory.Name == newCategory.DisplayOrder.ToString())
-            {
-                ModelState.AddModelError("name", "The Display Order can't match with name");
-            }
-
             if (ModelState.IsValid)
             {
-                _applicationDb.Add(newCategory);
+                _applicationDb.Update(newCategory);
                 _applicationDb.SaveChanges();
+
+                TempData["success"] = "Category was successfully updated!";
 
                 return RedirectToAction("Index");
             }
 
             return View(newCategory);
+        }
+
+        public IActionResult Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            Category? categoryFromDb = _applicationDb.Categories.Find(id);
+
+            if (categoryFromDb == null)
+            {
+                return NotFound();
+            }
+
+            return View(categoryFromDb);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        public IActionResult DeletePOST(int? id)
+        {
+            Category? categoryFromDb = _applicationDb.Categories.Find(id);
+
+            if (categoryFromDb == null)
+            {
+                return NotFound();
+            }
+
+            _applicationDb.Remove(categoryFromDb);
+            _applicationDb.SaveChanges();
+
+            TempData["success"] = "Category was successfully deleted!";
+
+            return RedirectToAction("Index");
         }
     }
 }
