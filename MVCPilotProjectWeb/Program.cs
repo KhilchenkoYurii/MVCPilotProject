@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using MVCPilotProjectWeb.Data;
+using MVCPilotProject.DataAccess.Repository;
+using MVCPilotProject.DataAccess.Repository.IRepository;
+using MVCPilotProjectWeb.DataAcess.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options=>options
     .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>(); 
 
 var app = builder.Build();
 

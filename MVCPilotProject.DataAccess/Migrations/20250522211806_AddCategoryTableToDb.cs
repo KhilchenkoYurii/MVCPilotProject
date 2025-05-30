@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace MVCPilotProjectWeb.Migrations
+namespace MVCPilotProjectWeb.DataAcess.Migrations
 {
     /// <inheritdoc />
     public partial class AddCategoryTableToDb : Migration

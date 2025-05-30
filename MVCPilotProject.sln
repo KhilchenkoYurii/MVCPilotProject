@@ -7,6 +7,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCPilotProjectWeb", "MVCPi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCPilotProjectWebRazor", "MVCPilotProjectWebRazor\MVCPilotProjectWebRazor.csproj", "{9854834D-FCC4-4170-8E5B-618DE0F49AD2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCPilotProject.DataAccess", "MVCPilotProject.DataAccess\MVCPilotProject.DataAccess.csproj", "{D0978B4A-A99F-452E-8657-FDB1376570A2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4BBABFC8-FB93-474B-95B3-611398AD947D} = {4BBABFC8-FB93-474B-95B3-611398AD947D}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCPilotProject.Models", "MVCPilotProject.Models\MVCPilotProject.Models.csproj", "{4BBABFC8-FB93-474B-95B3-611398AD947D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MVCPilotProject.Utility", "MVCPilotProject.Utility\MVCPilotProject.Utility.csproj", "{2625A4E5-BDD2-46E0-8BC2-52C0F1C82014}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +30,18 @@ Global
 		{9854834D-FCC4-4170-8E5B-618DE0F49AD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9854834D-FCC4-4170-8E5B-618DE0F49AD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9854834D-FCC4-4170-8E5B-618DE0F49AD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0978B4A-A99F-452E-8657-FDB1376570A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0978B4A-A99F-452E-8657-FDB1376570A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0978B4A-A99F-452E-8657-FDB1376570A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0978B4A-A99F-452E-8657-FDB1376570A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BBABFC8-FB93-474B-95B3-611398AD947D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BBABFC8-FB93-474B-95B3-611398AD947D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BBABFC8-FB93-474B-95B3-611398AD947D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BBABFC8-FB93-474B-95B3-611398AD947D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2625A4E5-BDD2-46E0-8BC2-52C0F1C82014}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2625A4E5-BDD2-46E0-8BC2-52C0F1C82014}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2625A4E5-BDD2-46E0-8BC2-52C0F1C82014}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2625A4E5-BDD2-46E0-8BC2-52C0F1C82014}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

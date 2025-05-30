@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using MVCPilotProjectWeb.Models;
+using MVCPilotProject.Models;
 
 namespace MVCPilotProjectWeb.Controllers
 {

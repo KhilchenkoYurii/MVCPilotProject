@@ -1,4 +1,4 @@
-namespace MVCPilotProjectWeb.Models
+namespace MVCPilotProject.Models
 {
     public class ErrorViewModel
     {

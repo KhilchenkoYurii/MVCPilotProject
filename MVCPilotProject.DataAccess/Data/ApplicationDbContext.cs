@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MVCPilotProjectWeb.Models;
+using MVCPilotProject.Models;
 
-namespace MVCPilotProjectWeb.Data
+namespace MVCPilotProjectWeb.DataAcess.Data
 {
     public class ApplicationDbContext : DbContext
     {
