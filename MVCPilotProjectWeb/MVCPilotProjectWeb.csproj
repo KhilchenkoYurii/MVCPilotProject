@@ -22,4 +22,8 @@
     <ProjectReference Include="..\MVCPilotProject.Utility\MVCPilotProject.Utility.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+  </ItemGroup>
+
 </Project>

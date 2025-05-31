@@ -2,20 +2,20 @@
 using MVCPilotProject.DataAccess.Repository.IRepository;
 using MVCPilotProject.Models;
 
-namespace MVCPilotProjectWeb.Controllers
+namespace MVCPilotProjectWeb.Areas.Admin.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly ICategoryRepository _categoryRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CategoryController(ICategoryRepository db)
+        public CategoryController(IUnitOfWork unitOfWork)
         {
-            _categoryRepository = db;
+            _unitOfWork = unitOfWork;
         }
 
         public IActionResult Index()
         {
-            var categories = _categoryRepository.GetAll().ToList();
+            var categories = _unitOfWork.Category.GetAll().ToList();
             return View(categories);
         }
 
@@ -34,8 +34,8 @@ namespace MVCPilotProjectWeb.Controllers
 
             if (ModelState.IsValid)
             {
-                _categoryRepository.Add(newCategory);
-                _categoryRepository.Save();
+                _unitOfWork.Category.Add(newCategory);
+                _unitOfWork.Save();
 
                 TempData["success"] = "Category was successfully created!";
 
@@ -52,7 +52,7 @@ namespace MVCPilotProjectWeb.Controllers
                 return NotFound();
             }
 
-            Category? categoryFromDb = _categoryRepository.Get(x=>x.Id == id);
+            Category? categoryFromDb = _unitOfWork.Category.Get(x=>x.Id == id);
             
             if (categoryFromDb == null)
             {
@@ -67,8 +67,8 @@ namespace MVCPilotProjectWeb.Controllers
         {
             if (ModelState.IsValid)
             {
-                _categoryRepository.Update(newCategory);
-                _categoryRepository.Save();
+                _unitOfWork.Category.Update(newCategory);
+                _unitOfWork.Save();
 
                 TempData["success"] = "Category was successfully updated!";
 
@@ -85,7 +85,7 @@ namespace MVCPilotProjectWeb.Controllers
                 return NotFound();
             }
 
-            Category? categoryFromDb = _categoryRepository.Get(x => x.Id == id);
+            Category? categoryFromDb = _unitOfWork.Category.Get(x => x.Id == id);
 
             if (categoryFromDb == null)
             {
@@ -98,15 +98,15 @@ namespace MVCPilotProjectWeb.Controllers
         [HttpPost, ActionName("Delete")]
         public IActionResult DeletePOST(int? id)
         {
-            Category? categoryFromDb = _categoryRepository.Get(x => x.Id == id);
+            Category? categoryFromDb = _unitOfWork.Category.Get(x => x.Id == id);
 
             if (categoryFromDb == null)
             {
                 return NotFound();
             }
 
-            _categoryRepository.Remove(categoryFromDb);
-            _categoryRepository.Save();
+            _unitOfWork.Category.Remove(categoryFromDb);
+            _unitOfWork.Save();
 
             TempData["success"] = "Category was successfully deleted!";
 
