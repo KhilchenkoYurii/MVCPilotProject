@@ -2,6 +2,7 @@
 using MVCPilotProject.DataAccess.Repository.IRepository;
 using MVCPilotProjectWeb.DataAcess.Data;
 using System.Linq.Expressions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 
 namespace MVCPilotProject.DataAccess.Repository
@@ -16,6 +17,8 @@ namespace MVCPilotProject.DataAccess.Repository
         {
             _db = db;
             this.dbSet = _db.Set<T>();
+
+            _db.Products.Include(u => u.Category).Include(u => u.CategoryId);
         }
 
         public void Add(T entity)
@@ -23,20 +26,39 @@ namespace MVCPilotProject.DataAccess.Repository
             dbSet.Add(entity);
         }
 
-        public T Get(Expression<Func<T, bool>> filter)
+        public T Get(Expression<Func<T, bool>> filter, string? includeParameter)
         {
-            IQueryable<T> queryable = dbSet;
+            IQueryable<T> query = dbSet;
 
-            queryable = queryable.Where(filter);
+            if (!string.IsNullOrEmpty(includeParameter))
+            {
+                foreach (var parameter in includeParameter
+                             .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(parameter);
+                }
+            }
 
-            return queryable.FirstOrDefault();
+            query = query.Where(filter);
+
+            return query.FirstOrDefault();
         }
 
-        public IEnumerable<T> GetAll()
+        public IEnumerable<T> GetAll(string? includeParameter = null)
         {
-            IQueryable<T> queryable = dbSet;
+            
+            IQueryable<T> query = dbSet;
 
-            return queryable.ToList();
+            if (!string.IsNullOrEmpty(includeParameter))
+            {
+                foreach (var parameter in includeParameter
+                             .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(parameter);
+                }
+            }
+
+            return query.ToList();
         }
 
         public void Remove(T entity)

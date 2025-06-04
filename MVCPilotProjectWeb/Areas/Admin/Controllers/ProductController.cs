@@ -20,9 +20,7 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
 
         public IActionResult Index()
         {
-            var products = _unitOfWork.Product.GetAll().ToList();
-
-
+            var products = _unitOfWork.Product.GetAll(includeParameter:"Category");
 
             return View(products);
         }
@@ -116,23 +114,6 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
             }
         }
 
-        public IActionResult Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            Product? ProductFromDb = _unitOfWork.Product.Get(x => x.Id == id);
-
-            if (ProductFromDb == null)
-            {
-                return NotFound();
-            }
-
-            return View(ProductFromDb);
-        }
-
         [HttpPost, ActionName("Delete")]
         public IActionResult DeletePOST(int? id)
         {
@@ -150,5 +131,41 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
 
             return RedirectToAction("Index");
         }
+
+        #region API Calls
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            var products = _unitOfWork.Product.GetAll(includeParameter: "Category");
+
+            return Json(new {data = products});
+        }
+
+
+        [HttpDelete]
+        public IActionResult Delete(int? id)
+        {
+            Product? ProductFromDb = _unitOfWork.Product.Get(x => x.Id == id);
+
+            if (ProductFromDb == null)
+            {
+                return Json(new { success = true, data = "Error while deleting!" });
+            }
+
+            var oldImage = Path.Combine(_webHost.WebRootPath, ProductFromDb.ImageUrl.TrimStart('\\'));
+
+            if (System.IO.File.Exists(oldImage))
+            {
+                System.IO.File.Delete(oldImage);
+            }
+
+            _unitOfWork.Product.Remove(ProductFromDb);
+            _unitOfWork.Save();
+
+            return Json(new { success = true, data = "Product was successfully deleted!" });
+
+        }
+
+        #endregion 
     }
 }
