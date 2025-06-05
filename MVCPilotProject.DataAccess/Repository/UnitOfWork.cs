@@ -1,5 +1,5 @@
-﻿using MVCPilotProject.DataAccess.Repository.IRepository;
-using MVCPilotProjectWeb.DataAcess.Data;
+﻿using MVCPilotProject.DataAccess.Data;
+using MVCPilotProject.DataAccess.Repository.IRepository;
 
 namespace MVCPilotProject.DataAccess.Repository
 {

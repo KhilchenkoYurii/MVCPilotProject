@@ -4,6 +4,7 @@ using MVCPilotProject.Models;
 
 namespace MVCPilotProjectWeb.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     public class CategoryController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;

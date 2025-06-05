@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using MVCPilotProject.DataAccess.Repository;
 using MVCPilotProject.DataAccess.Repository.IRepository;
-using MVCPilotProjectWeb.DataAcess.Data;
+using Microsoft.AspNetCore.Identity;
+using MVCPilotProject.DataAccess.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options=>options
     .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); 
 
 var app = builder.Build();
