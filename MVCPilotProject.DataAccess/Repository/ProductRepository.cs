@@ -13,9 +13,9 @@ namespace MVCPilotProject.DataAccess.Repository
             _db = db;
         }
 
-        public void Update(Category category)
+        public void Update(Product product)
         {
-            _db.Categories.Update(category);
+            _db.Products.Update(product);
         }
     }
 }

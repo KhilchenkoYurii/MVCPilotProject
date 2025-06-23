@@ -27,9 +27,14 @@ namespace MVCPilotProjectWeb.Areas.Customer.Controllers
 
         public IActionResult Details(int productId)
         {
-            Product product = _unitOfWork.Product.Get(u=>u.Id == productId, includeParameter: "Category");
+            ShoppingCart cart = new ShoppingCart
+            {
+                Product = _unitOfWork.Product.Get(u => u.Id == productId, includeParameter: "Category"),
+                Count = 1,
+                ProductId = productId
+            };
 
-            return View(product);
+            return View(cart);
         }
 
         public IActionResult Privacy()

@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace MVCPilotProject.Models
 {
     public class ApplicationUser : IdentityUser
     {
         [Required]
-        public int Name { get; set; }
+        public string Name { get; set; }
 
         public string? StreetAddress { get; set; }
 
@@ -15,5 +17,11 @@ namespace MVCPilotProject.Models
         public string? State { get; set; }
 
         public string? PostalCode { get; set; }
+
+        public int? CompanyId { get; set; }
+
+        [ForeignKey("CompanyId")]
+        [ValidateNever]
+        public Company Company { get; set; }
     }
 }

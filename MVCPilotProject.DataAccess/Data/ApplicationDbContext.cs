@@ -17,6 +17,10 @@ namespace MVCPilotProject.DataAccess.Data
         
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
 
+        public DbSet<Company> Companies{ get; set; }
+
+        public DbSet<ShoppingCart> ShoppingCarts{ get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,6 +31,38 @@ namespace MVCPilotProject.DataAccess.Data
                 new Category { Id = 2, Name = "SciFi", DisplayOrder = 3 },
                 new Category { Id = 3, Name = "Action", DisplayOrder = 2 }
                 );
+
+            modelBuilder.Entity<Company>().HasData(
+                new Company
+                {
+                    Id = 1,
+                    Name = "Tech Solution",
+                    StreetAddress = "123 Tech St",
+                    City = "Tech City",
+                    State = "IL",
+                    PhoneNumber = "6669990000"
+                },
+                new Company
+                {
+                    Id = 2,
+                    Name = "Vivid Books",
+                    StreetAddress = "999 Vid St",
+                    City = "Vid City",
+                    State = "IL",
+                    PhoneNumber = "7779990000"
+                },
+                new Company
+                {
+                    Id = 3,
+                    Name = "Readers Club",
+                    StreetAddress = "999 Main St",
+                    City = "Lala land",
+                    State = "NY",
+                    PhoneNumber = "1113335555"
+                }
+            );
+
+
 
             modelBuilder.Entity<Product>().HasData(
                 new Product
