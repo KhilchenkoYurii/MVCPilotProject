@@ -26,9 +26,18 @@ namespace MVCPilotProject.DataAccess.Repository
             dbSet.Add(entity);
         }
 
-        public T Get(Expression<Func<T, bool>> filter, string? includeParameter)
+        public T Get(Expression<Func<T, bool>> filter, string? includeParameter, bool tracked = false)
         {
-            IQueryable<T> query = dbSet;
+            IQueryable<T> query;
+
+            if (tracked)
+            {
+                query = dbSet;
+            }
+            else
+            {
+                query = dbSet.AsNoTracking();
+            }
 
             if (!string.IsNullOrEmpty(includeParameter))
             {
@@ -43,11 +52,17 @@ namespace MVCPilotProject.DataAccess.Repository
 
             return query.FirstOrDefault();
         }
+           
 
-        public IEnumerable<T> GetAll(string? includeParameter = null)
+        public IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter, string? includeParameter = null)
         {
             
             IQueryable<T> query = dbSet;
+            if (filter != null)
+            {
+                query = query.Where(filter);
+
+            }
 
             if (!string.IsNullOrEmpty(includeParameter))
             {
