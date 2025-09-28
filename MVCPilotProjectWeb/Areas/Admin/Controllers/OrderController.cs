@@ -4,6 +4,7 @@ using MVCPilotProject.DataAccess.Repository.IRepository;
 using MVCPilotProject.Models;
 using MVCPilotProject.Models.ViewModels;
 using MVCPilotProject.Utility;
+using Stripe;
 using Stripe.Climate;
 using System.Security.Claims;
 
@@ -68,6 +69,13 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
             return RedirectToAction(nameof(Details), new {orderId = orderHeaderFromView.Id});
         }
 
+        [ActionName("Details")]
+        [HttpPost]
+        public IActionResult DetailsPayNow()
+        {
+            return RedirectToAction(nameof(Details), new { orderId = OrderVm.OrderHeader.Id });
+        }
+
         [HttpPost]
         [Authorize(Roles = SD.RoleAdmin + "," + SD.RoleEmployee)]
         public IActionResult StartProcessing()
@@ -85,6 +93,7 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
         public IActionResult ShipOrder()
         {
             var orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == OrderVm.OrderHeader.Id);
+
             orderHeader.TrackingNumber = OrderVm.OrderHeader.TrackingNumber;
             orderHeader.Carrier = OrderVm.OrderHeader.Carrier;
             orderHeader.OrderStatus = SD.StatusShipped;
@@ -99,6 +108,37 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
             _unitOfWork.Save();
 
             TempData["Success"] = "Order shipped successfully";
+
+            return RedirectToAction(nameof(Details), new { orderId = OrderVm.OrderHeader.Id });
+        }
+
+        [HttpPost]
+        [Authorize(Roles = SD.RoleAdmin + "," + SD.RoleEmployee)]
+        public IActionResult CancelOrder()
+        {
+            var orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == OrderVm.OrderHeader.Id);
+
+            if(orderHeader.PaymentStatus == SD.PaymentStatusApproved)
+            {
+                var option = new RefundCreateOptions
+                {
+                    Reason = RefundReasons.RequestedByCustomer,
+                    PaymentIntent = orderHeader.PaymentIntentId
+                };
+
+                var service = new RefundService();
+                Refund refund = service.Create(option);
+
+                _unitOfWork.OrderHeader.UpdateStatus(orderHeader.Id, SD.StatusCancelled, SD.StatusRefunded);
+            }
+            else
+            {
+                _unitOfWork.OrderHeader.UpdateStatus(orderHeader.Id, SD.StatusCancelled, SD.StatusCancelled);
+            }
+
+            _unitOfWork.Save();
+
+            TempData["Success"] = "Order cancelled successfully";
 
             return RedirectToAction(nameof(Details), new { orderId = OrderVm.OrderHeader.Id });
         }
