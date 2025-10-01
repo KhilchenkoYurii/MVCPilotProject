@@ -1,9 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-using MVCPilotProject.DataAccess.Repository;
-using MVCPilotProject.DataAccess.Repository.IRepository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
 using MVCPilotProject.DataAccess.Data;
+using MVCPilotProject.DataAccess.DbInitializer;
+using MVCPilotProject.DataAccess.Repository;
+using MVCPilotProject.DataAccess.Repository.IRepository;
 using MVCPilotProject.Utility;
 using Stripe;
 
@@ -30,6 +31,7 @@ builder.Services.AddAuthentication().AddFacebook(option =>
     option.AppSecret = "f9bdc2af171d913a11106691a646a423";
 });
 
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options=>
 {
@@ -55,6 +57,7 @@ app.UseStaticFiles();
 StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:SecretKey").Get<string>();
 app.UseRouting();
 app.UseSession();
+SeedDatabase();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapRazorPages();
@@ -63,3 +66,13 @@ app.MapControllerRoute(
     pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+void SeedDatabase()
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbInicializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+
+        dbInicializer.Initialize();
+    }
+}

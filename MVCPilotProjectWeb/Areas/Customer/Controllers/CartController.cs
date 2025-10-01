@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using MVCPilotProject.DataAccess.Repository.IRepository;
 using MVCPilotProject.Models;
@@ -14,13 +16,15 @@ namespace MVCPilotProjectWeb.Areas.Customer.Controllers
     public class CartController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IEmailSender _emailSender;
 
         [BindProperty]
         public ShoppingCartVM ShoppingCartVM { get; set; }
 
-        public CartController(IUnitOfWork unitOfWork)
+        public CartController(IUnitOfWork unitOfWork, IEmailSender emailSender)
         {
             _unitOfWork = unitOfWork;
+            _emailSender = emailSender;
         }
 
         public IActionResult Index()
@@ -224,6 +228,8 @@ namespace MVCPilotProjectWeb.Areas.Customer.Controllers
 
                 HttpContext.Session.Clear();
             }
+
+            //_emailSender.SendEmailAsync(orderHeader.ApplicationUser.Email, "New Order", $"<p>New Order created - {orderHeader.Id}</p>");
 
             List<ShoppingCart> shoppingCarts =
                 _unitOfWork.ShoppingCart.GetAll(s => s.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
