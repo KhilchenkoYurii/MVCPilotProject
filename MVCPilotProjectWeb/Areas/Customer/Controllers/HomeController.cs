@@ -24,6 +24,14 @@ namespace MVCPilotProjectWeb.Areas.Customer.Controllers
 
         public IActionResult Index()
         {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+
+            if(userId != null)
+            {
+                HttpContext.Session.SetInt32(SD.SessionCart, _unitOfWork.ShoppingCart.GetAll(s => s.ApplicationUserId == userId.Value).Count());
+            }
+
             IEnumerable<Product> productList = _unitOfWork.Product.GetAll(null,includeParameter: "Category");
 
             return View(productList);
