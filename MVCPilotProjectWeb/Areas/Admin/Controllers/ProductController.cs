@@ -46,7 +46,7 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
             }
             else
             {
-                productVM.Product = _unitOfWork.Product.Get(x => x.Id == id);
+                productVM.Product = _unitOfWork.Product.Get(x => x.Id == id, includeParameter:"ProductImages");
                 return View(productVM);
             }
 
@@ -129,6 +129,32 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
             }
         }
 
+        public IActionResult DeleteImage(int imageid)
+        {
+            var imageToBeDeleted = _unitOfWork.ProductImage.Get(x => x.Id.Equals(imageid));
+
+            if(imageToBeDeleted != null)
+            {
+                if(!string.IsNullOrEmpty(imageToBeDeleted.ImageUrl))
+                {
+                    var oldImage = Path.Combine(_webHost.WebRootPath, imageToBeDeleted.ImageUrl.TrimStart('\\'));
+
+                    if (System.IO.File.Exists(oldImage))
+                    {
+                        System.IO.File.Delete(oldImage);
+                    }
+                }
+
+                _unitOfWork.ProductImage.Remove(imageToBeDeleted);
+                _unitOfWork.Save();
+
+                TempData["success"] = "Image was successfully deleted!";
+
+            }
+
+            return RedirectToAction(nameof(Upsert), new { id = imageToBeDeleted.ProductId });
+        }
+
         [HttpPost, ActionName("Delete")]
         public IActionResult DeletePOST(int? id)
         {
@@ -167,12 +193,21 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
                 return Json(new { success = true, data = "Error while deleting!" });
             }
 
-            //var oldImage = Path.Combine(_webHost.WebRootPath, ProductFromDb.ImageUrl.TrimStart('\\'));
+            string productPath = @"images\products\product-" + id;
 
-            //if (System.IO.File.Exists(oldImage))
-            //{
-            //    System.IO.File.Delete(oldImage);
-            //}
+            string finalPath = Path.Combine(_webHost.WebRootPath, productPath);
+
+            if (Directory.Exists(finalPath))
+            {
+                string[] filePaths = Directory.GetFiles(finalPath);
+
+                foreach (string filePath in filePaths)
+                {
+                    System.IO.File.Delete(filePath);
+                }
+
+                Directory.Delete(finalPath);
+            }
 
             _unitOfWork.Product.Remove(ProductFromDb);
             _unitOfWork.Save();
