@@ -53,7 +53,7 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        public IActionResult Upsert(ProductVM newProduct, IFormFile? file)
+        public IActionResult Upsert(ProductVM newProduct, List<IFormFile>? files)
         {
             if (newProduct.Product.Price <= 0 || newProduct.Product.Price50 <= 0 || newProduct.Product.Price100 <= 0)
             {
@@ -62,47 +62,58 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
 
             if (ModelState.IsValid)
             {
-                string wwwRootPath = _webHost.WebRootPath;
-
-                if (file != null)
-                {
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-
-                    string productPath = Path.Combine(wwwRootPath, @"images\product");
-
-                    if (!string.IsNullOrEmpty(newProduct.Product.ImageUrl))
-                    {
-                        var oldImage = Path.Combine(wwwRootPath, newProduct.Product.ImageUrl.TrimStart('\\'));
-
-                        if (System.IO.File.Exists(oldImage))
-                        {
-                            System.IO.File.Delete(oldImage);
-                        }
-                    }
-
-
-                    using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
-                    {
-                        file.CopyTo(fileStream);
-                    }
-
-                    newProduct.Product.ImageUrl = @"\images\product\" + fileName;
-                }
-
-                if(newProduct.Product.Id == 0)
+                if (newProduct.Product.Id == 0)
                 {
                     _unitOfWork.Product.Add(newProduct.Product);
-
-                    TempData["success"] = "Product was successfully created!";
                 }
                 else
                 {
                     _unitOfWork.Product.Update(newProduct.Product);
-
-                    TempData["success"] = "Product was successfully updated!";
                 }
 
                 _unitOfWork.Save();
+
+                string wwwRootPath = _webHost.WebRootPath;
+
+                if (files != null)
+                {
+                    foreach (var file in files)
+                    {
+                        string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+
+                        string productPath = @"images\products\product-" + newProduct.Product.Id;
+
+                        string finalPath = Path.Combine(wwwRootPath, productPath);
+
+                        if (!Directory.Exists(finalPath))
+                        {
+                            Directory.CreateDirectory(finalPath);
+                        }
+
+                        using (var fileStream = new FileStream(Path.Combine(finalPath, fileName), FileMode.Create))
+                        {
+                            file.CopyTo(fileStream);
+                        }
+
+                        ProductImage productImage = new ProductImage()
+                        {
+                            ImageUrl = $"\\{productPath}\\{fileName}",
+                            ProductId = newProduct.Product.Id,
+                        };
+
+                        if(newProduct.Product.ProductImages == null)
+                        {
+                            newProduct.Product.ProductImages = new List<ProductImage>();
+                        }
+
+                        newProduct.Product.ProductImages.Add(productImage);
+                    }
+
+                    _unitOfWork.Product.Update(newProduct.Product);
+                    _unitOfWork.Save();
+                }
+
+                TempData["success"] = "Product was successfully create/updated!";
 
                 return RedirectToAction("Index");
             }
@@ -156,12 +167,12 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
                 return Json(new { success = true, data = "Error while deleting!" });
             }
 
-            var oldImage = Path.Combine(_webHost.WebRootPath, ProductFromDb.ImageUrl.TrimStart('\\'));
+            //var oldImage = Path.Combine(_webHost.WebRootPath, ProductFromDb.ImageUrl.TrimStart('\\'));
 
-            if (System.IO.File.Exists(oldImage))
-            {
-                System.IO.File.Delete(oldImage);
-            }
+            //if (System.IO.File.Exists(oldImage))
+            //{
+            //    System.IO.File.Delete(oldImage);
+            //}
 
             _unitOfWork.Product.Remove(ProductFromDb);
             _unitOfWork.Save();
