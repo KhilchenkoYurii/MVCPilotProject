@@ -15,14 +15,18 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
     [Authorize(Roles = SD.RoleAdmin)]
     public class UserController : Controller
     {
-        private readonly ApplicationDbContext _applicationDb;
 
         private readonly UserManager<IdentityUser> _userManager;
 
-        public UserController(ApplicationDbContext applicationDb, UserManager<IdentityUser> userManager)
+        private readonly RoleManager<IdentityRole> _roleManager;
+
+        private readonly IUnitOfWork _unitOfWork;
+
+        public UserController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IUnitOfWork unitOfWork)
         {
-            _applicationDb = applicationDb;
             _userManager = userManager;
+            _roleManager = roleManager;
+            _unitOfWork = unitOfWork;
         }
 
         public IActionResult Index()
@@ -32,26 +36,24 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
 
         public IActionResult RoleManagement(string userId)
         {
-            var roleId = _applicationDb.UserRoles.FirstOrDefault(u => u.UserId.Equals(userId)).RoleId;
-
             RoleManagementVM roleVm = new RoleManagementVM()
             {
-                ApplicationUser = _applicationDb.ApplicationUsers.Include(u=>u.Company).FirstOrDefault(u => u.Id.Equals(userId)),
+                ApplicationUser = _unitOfWork.ApplicationUser.Get(u=>u.Id.Equals(userId), includeParameter:"Company"),
 
-                RoleList = _applicationDb.Roles.Select(i=>new SelectListItem
+                RoleList = _roleManager.Roles.Select(i=>new SelectListItem
                 {
                     Text = i.Name,
                     Value = i.Name
                 }),
 
-                CompanyList = _applicationDb.Companies.Select(i => new SelectListItem
+                CompanyList = _unitOfWork.Company.GetAll().Select(i => new SelectListItem
                 {
                     Text = i.Name,
                     Value = i.Id.ToString()
                 }),
             };
 
-            roleVm.ApplicationUser.Role = _applicationDb.Roles.FirstOrDefault(u => u.Id.Equals(roleId)).Name;
+            roleVm.ApplicationUser.Role = _userManager.GetRolesAsync(_unitOfWork.ApplicationUser.Get(u => u.Id.Equals(userId))).GetAwaiter().GetResult().FirstOrDefault();
 
             return View(roleVm);
         }
@@ -59,13 +61,12 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
         [HttpPost]
         public IActionResult RoleManagement(RoleManagementVM roleVm)
         {
-            var roleId = _applicationDb.UserRoles.FirstOrDefault(u => u.UserId.Equals(roleVm.ApplicationUser.Id)).RoleId;
+            var oldRole = _userManager.GetRolesAsync(_unitOfWork.ApplicationUser.Get(u => u.Id.Equals(roleVm.ApplicationUser.Id))).GetAwaiter().GetResult().FirstOrDefault();
 
-            var oldRole = _applicationDb.Roles.FirstOrDefault(u => u.Id.Equals(roleId)).Name;
+            ApplicationUser applicationUser = _unitOfWork.ApplicationUser.Get(u => u.Id.Equals(roleVm.ApplicationUser.Id));
 
             if (!roleVm.ApplicationUser.Role.Equals(oldRole))
             {
-                ApplicationUser applicationUser = _applicationDb.ApplicationUsers.FirstOrDefault(u => u.Id.Equals(roleVm.ApplicationUser.Id));
                 if (roleVm.ApplicationUser.Role.Equals(SD.RoleCompany))
                 {
                     applicationUser.CompanyId = roleVm.ApplicationUser.CompanyId;
@@ -74,29 +75,34 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
                 {
                     applicationUser.CompanyId = null;
                 }
-                _applicationDb.SaveChanges();
+
+                _unitOfWork.ApplicationUser.Update(applicationUser);
+                _unitOfWork.Save();
 
                 _userManager.RemoveFromRoleAsync(applicationUser,oldRole).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(applicationUser,roleVm.ApplicationUser.Role).GetAwaiter().GetResult();
             }
-
-            return RedirectToAction("Index");
+            else
+            {
+                if(oldRole.Equals(SD.RoleCompany) && !applicationUser.CompanyId.Equals(roleVm.ApplicationUser.Company))
+                {
+                    applicationUser.CompanyId = roleVm.ApplicationUser.CompanyId;
+                    _unitOfWork.ApplicationUser.Update(applicationUser);
+                    _unitOfWork.Save();
+                }
+            }
+                return RedirectToAction("Index");
         }
 
         #region API Calls
         [HttpGet]
         public IActionResult GetAll()
         {
-            List<ApplicationUser> users = _applicationDb.ApplicationUsers.Include(u=>u.Company).ToList();
-
-            var userRoles = _applicationDb.UserRoles.ToList();
-
-            var roles = _applicationDb.Roles.ToList();
+            List<ApplicationUser> users = _unitOfWork.ApplicationUser.GetAll(includeParameter:"Company").ToList();
 
             foreach (var user in users)
             {
-                var roleId = userRoles.FirstOrDefault(u => u.UserId.Equals(user.Id)).RoleId;
-                user.Role = roles.FirstOrDefault(u => u.Id.Equals(roleId)).Name;
+                user.Role = _userManager.GetRolesAsync(user).GetAwaiter().GetResult().FirstOrDefault();
 
                 if (user.Company == null)
                 {
@@ -110,7 +116,7 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
         [HttpPost]
         public IActionResult LockUnlock([FromBody]string id)
         {
-            var user = _applicationDb.ApplicationUsers.FirstOrDefault(u => u.Id.Equals(id));
+            var user = _unitOfWork.ApplicationUser.Get(u => u.Id.Equals(id));
 
             if(user == null)
             {
@@ -126,8 +132,8 @@ namespace MVCPilotProjectWeb.Areas.Admin.Controllers
             {
                 user.LockoutEnd = DateTime.Now.AddYears(1000);
             }
-
-            _applicationDb.SaveChanges();
+            _unitOfWork.ApplicationUser.Update(user);
+            _unitOfWork.Save();
 
             return Json(new { success = true, message = "User successfully locked/unlocked!" });
         }
