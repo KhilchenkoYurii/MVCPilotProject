@@ -32,7 +32,7 @@ namespace MVCPilotProjectWeb.Areas.Customer.Controllers
                 HttpContext.Session.SetInt32(SD.SessionCart, _unitOfWork.ShoppingCart.GetAll(s => s.ApplicationUserId == userId.Value).Count());
             }
 
-            IEnumerable<Product> productList = _unitOfWork.Product.GetAll(null,includeParameter: "Category");
+            IEnumerable<Product> productList = _unitOfWork.Product.GetAll(null,includeParameter: "Category,ProductImages");
 
             return View(productList);
         }
@@ -41,7 +41,7 @@ namespace MVCPilotProjectWeb.Areas.Customer.Controllers
         {
             ShoppingCart cart = new ShoppingCart
             {
-                Product = _unitOfWork.Product.Get(u => u.Id == productId, includeParameter: "Category"),
+                Product = _unitOfWork.Product.Get(u => u.Id == productId, includeParameter: "Category,ProductImages"),
                 Count = 1,
                 ProductId = productId
             };

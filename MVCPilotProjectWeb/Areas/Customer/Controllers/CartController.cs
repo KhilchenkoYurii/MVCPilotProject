@@ -38,8 +38,11 @@ namespace MVCPilotProjectWeb.Areas.Customer.Controllers
                 OrderHeader = new OrderHeader()
             };
 
+            IEnumerable<ProductImage> productImages = _unitOfWork.ProductImage.GetAll();
+
             foreach (var cart in ShoppingCartVM.ShoppingCarts)
             {
+                cart.Product.ProductImages = productImages.Where(x=>x.Id.Equals(cart.Product.Id)).ToList();
                 cart.Price = GetPriceBasedOnCount(cart);
                 ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
             }
